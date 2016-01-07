@@ -1,21 +1,13 @@
 var express = require('express');
+var bp = require("body-parser");
+
 var app = express();
+var todos = [];
+var todoNextId = 1;
+
 const PORT = process.env.PORT || 3000;
-var todos = [
-	{
-		id: 1,
-		task: "Shower, you stink",
-		complete: false
-	},{
-		id: 2,
-		task: "Complete the todo app",
-		complete: false
-	},{
-		id: 3,
-		task: "New task I need to do",
-		complete: true
-	}
-]
+
+app.use(bp.json());
 
 app.get("/", function (req, res) {
 	res.send("Todo API Root");
@@ -34,6 +26,13 @@ app.get("/todos/:id", function (req, res) {
 		}
 	}
 	res.status(404).send();
+});
+
+app.post("/todos", function (req, res) {
+	var body = req.body;
+	body.id = todoNextId++;
+	todos.push(body);
+	res.json(body);
 });
 
 app.listen(PORT, function () {
