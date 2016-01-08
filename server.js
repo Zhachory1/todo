@@ -16,7 +16,14 @@ app.get("/", function (req, res) {
 
 // GET /todos
 app.get("/todos", function (req, res) { 
-	res.json(todos);
+	var query = req.query;
+	var filtTodo = todos;
+	if(query.completed == 'true') {
+		filtTodo = _.where(filtTodo, {complete: true});
+	} else if (query.completed == 'false') {
+		filtTodo = _.where(filtTodo, {complete: false});
+	}
+	res.json(filtTodo);
 });
 
 // GET /todos/:id
@@ -33,7 +40,7 @@ app.post("/todos", function (req, res) {
 	var body = _.pick(req.body, "task", "complete");
 	body.task = body.task.trim();
 
-	if(_.isString(body.task) && _.isBoolean(body.complete) && body.task.trim().length > 0) {
+	if(_.isString(body.task) && _.isBoolean(body.complete) && body.task.length > 0) {
 		body.id = todoNextId++;
 		todos.push(body);
 		res.json(body);
@@ -50,6 +57,32 @@ app.delete("/todos/:id", function (req, res) {
 		todos = _.without(todos, task);
 		res.send("Task has been deleted");
 	}
+});
+
+app.put("/todos/:id", function (req, res) {
+	var body = _.pick(req.body, "task", "complete");
+	var task = _.findWhere(todos, {id: parseInt(req.params.id)});
+	var valid = {};
+
+	if(typeof task === 'undefined') {
+		return res.status(404).send();
+	}
+
+	if(body.hasOwnProperty("complete") && _.isBoolean(body.complete)) {
+		valid.complete = body.complete;
+	} else if (body.hasOwnProperty("complete")) {
+		return res.status(400).send();
+	}
+
+	if(body.hasOwnProperty("task") && _.isString(body.task) &&  body.task.length > 0) {
+		valid.task = body.task.trim();
+	} else if (body.hasOwnProperty("task")) {
+		return res.status(400).send();
+	}
+
+	_.extendOwn(task, valid);
+
+	res.json(task);
 });
 
 app.listen(PORT, function () {
