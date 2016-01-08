@@ -42,6 +42,16 @@ app.post("/todos", function (req, res) {
 	}
 });
 
+app.delete("/todos/:id", function (req, res) {
+	var task = _.findWhere(todos, {id: parseInt(req.params.id)});
+	if(typeof task === 'undefined') {
+		res.status(404).send();
+	} else {
+		todos = _.without(todos, task);
+		res.send("Task has been deleted");
+	}
+});
+
 app.listen(PORT, function () {
 	console.log("Express server is running on port " + PORT + "...");
 });
