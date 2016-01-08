@@ -18,10 +18,16 @@ app.get("/", function (req, res) {
 app.get("/todos", function (req, res) { 
 	var query = req.query;
 	var filtTodo = todos;
-	if(query.completed == 'true') {
+	if(query.hasOwnProperty("completed") && query.completed == 'true') {
 		filtTodo = _.where(filtTodo, {complete: true});
-	} else if (query.completed == 'false') {
+	} else if (query.hasOwnProperty("completed") && query.completed == 'false') {
 		filtTodo = _.where(filtTodo, {complete: false});
+	}
+
+	if(query.hasOwnProperty("q") && query.q > 0) {
+		filtTodo = _.filter(filtTodo, function (obj) {
+			return obj.task.toLowerCase().indexOf(query.q.toLowerCase()) > -1;
+		});
 	}
 	res.json(filtTodo);
 });
