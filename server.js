@@ -37,14 +37,15 @@ app.get("/todos", function(req, res) {
 
 // GET /todos/:id
 app.get("/todos/:id", function(req, res) {
-	var task = _.findWhere(todos, {
-		id: parseInt(req.params.id)
+	db.todo.findById(parseInt(req.params.id)).then(function (todo) {
+		if(!!todo) {
+			res.json(todo);
+		} else {
+			res.status(404).send();
+		}
+	}, function (e) {
+		res.status(500).json(e);
 	});
-	if (typeof task === 'undefined') {
-		res.status(404).send();
-	} else {
-		res.json(task);
-	}
 });
 
 app.post("/todos", function(req, res) {
