@@ -16,23 +16,21 @@ app.get("/", function(req, res) {
 // GET /todos
 app.get("/todos", function(req, res) {
 	var query = req.query;
-	var filtTodo = todos;
-	if (query.hasOwnProperty("completed") && query.completed == 'true') {
-		filtTodo = _.where(filtTodo, {
-			complete: true
-		});
-	} else if (query.hasOwnProperty("completed") && query.completed == 'false') {
-		filtTodo = _.where(filtTodo, {
-			complete: false
-		});
+	var where = {};
+	if (query.hasOwnProperty("completed")) {
+		where.completed = (query.completed === 'true');
+	} 
+	if (query.hasOwnProperty("q") && query.q.length > 0) {
+		where.description = {
+			$like: "%" + query.q.toLowerCase() + "%"
+		};
 	}
 
-	if (query.hasOwnProperty("q") && query.q > 0) {
-		filtTodo = _.filter(filtTodo, function(obj) {
-			return obj.task.toLowerCase().indexOf(query.q.toLowerCase()) > -1;
-		});
-	}
-	res.json(filtTodo);
+	db.todo.findAll({where}).then(function (todos) {
+		res.json(todos)
+	}, function (e) {
+		res.status(500).json(e);
+	});
 });
 
 // GET /todos/:id
