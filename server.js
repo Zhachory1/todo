@@ -1,12 +1,11 @@
-var express = require('express');
-var bp = require("body-parser");
-var _ = require("underscore");
-
-var app = express();
-var todos = [];
+var express    = require('express');
+var bp         = require("body-parser");
+var _          = require("underscore");
+var db         = require("./db.js")
+var app        = express();
+var todos      = [];
 var todoNextId = 1;
-
-const PORT = process.env.PORT || 3000;
+const PORT     = process.env.PORT || 3000;
 
 app.use(bp.json());
 
@@ -49,16 +48,14 @@ app.get("/todos/:id", function(req, res) {
 });
 
 app.post("/todos", function(req, res) {
-	var body = _.pick(req.body, "task", "complete");
-	body.task = body.task.trim();
+	var body = _.pick(req.body, "description", "completed");
+	body.description = body.description.trim();
 
-	if (_.isString(body.task) && _.isBoolean(body.complete) && body.task.length > 0) {
-		body.id = todoNextId++;
-		todos.push(body);
-		res.json(body);
-	} else {
-		res.status(400).send();
-	}
+	db.todo.create(body).then(function (todo) {
+		res.json(todo);
+	}, function (e) {
+		res.status(400).json(e);
+	});
 });
 
 app.delete("/todos/:id", function(req, res) {
@@ -101,6 +98,8 @@ app.put("/todos/:id", function(req, res) {
 	res.json(task);
 });
 
-app.listen(PORT, function() {
-	console.log("Express server is running on port " + PORT + "...");
+db.seq.sync().then(function	() {
+	app.listen(PORT, function() {
+		console.log("Express server is running on port " + PORT + "...");
+	});
 });
