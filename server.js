@@ -19,29 +19,31 @@ app.get("/todos", function(req, res) {
 	var where = {};
 	if (query.hasOwnProperty("completed")) {
 		where.completed = (query.completed === 'true');
-	} 
+	}
 	if (query.hasOwnProperty("q") && query.q.length > 0) {
 		where.description = {
 			$like: "%" + query.q.toLowerCase() + "%"
 		};
 	}
 
-	db.todo.findAll({where}).then(function (todos) {
+	db.todo.findAll({
+		where
+	}).then(function(todos) {
 		res.json(todos)
-	}, function (e) {
+	}, function(e) {
 		res.status(500).json(e);
 	});
 });
 
 // GET /todos/:id
 app.get("/todos/:id", function(req, res) {
-	db.todo.findById(parseInt(req.params.id)).then(function (todo) {
-		if(!!todo) {
+	db.todo.findById(parseInt(req.params.id)).then(function(todo) {
+		if (!!todo) {
 			res.json(todo);
 		} else {
 			res.status(404).send();
 		}
-	}, function (e) {
+	}, function(e) {
 		res.status(500).json(e);
 	});
 });
@@ -50,9 +52,9 @@ app.post("/todos", function(req, res) {
 	var body = _.pick(req.body, "description", "completed");
 	body.description = body.description.trim();
 
-	db.todo.create(body).then(function (todo) {
+	db.todo.create(body).then(function(todo) {
 		res.json(todo);
-	}, function (e) {
+	}, function(e) {
 		res.status(400).json(e);
 	});
 });
@@ -97,7 +99,7 @@ app.put("/todos/:id", function(req, res) {
 	res.json(task);
 });
 
-db.seq.sync().then(function	() {
+db.seq.sync().then(function() {
 	app.listen(PORT, function() {
 		console.log("Express server is running on port " + PORT + "...");
 	});
