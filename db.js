@@ -1,5 +1,5 @@
-var db     = {};
-var env    = process.env.NODE_ENV || 'development';
+var db  = {};
+var env = process.env.NODE_ENV || 'development';
 var Seq = require('sequelize');
 var seq;
 

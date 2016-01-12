@@ -37,7 +37,7 @@ app.get("/todos", function(req, res) {
 
 // GET /todos/:id
 app.get("/todos/:id", function(req, res) {
-	db.todo.findById(parseInt(req.params.id)).then(function(todo) {
+	db.todo.findById(parseInt(req.params.id, 10)).then(function(todo) {
 		if (!!todo) {
 			res.json(todo);
 		} else {
@@ -60,15 +60,21 @@ app.post("/todos", function(req, res) {
 });
 
 app.delete("/todos/:id", function(req, res) {
-	var task = _.findWhere(todos, {
-		id: parseInt(req.params.id)
-	});
-	if (typeof task === 'undefined') {
-		res.status(404).send();
-	} else {
-		todos = _.without(todos, task);
-		res.send("Task has been deleted");
-	}
+	db.todo.destroy({
+		where: {
+			id: parseInt(req.params.id, 10)
+		}
+	}).then(function (affRows) {
+		if (affRows) {
+			res.status(204);
+		} else {
+			res.status(404).json({
+				error: "No todo with that id."
+			});
+		}
+	}, function (e) {
+		res.status(500).send();
+	})
 });
 
 app.put("/todos/:id", function(req, res) {
