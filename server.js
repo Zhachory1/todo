@@ -66,7 +66,7 @@ app.delete("/todos/:id", function(req, res) {
 		}
 	}).then(function (affRows) {
 		if (affRows) {
-			res.status(204);
+			res.status(204).send();
 		} else {
 			res.status(404).json({
 				error: "No todo with that id."
