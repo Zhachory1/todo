@@ -27,7 +27,7 @@ app.get("/todos", function(req, res) {
 	}
 
 	db.todo.findAll({
-		where
+		where: where
 	}).then(function(todos) {
 		res.json(todos)
 	}, function(e) {
@@ -78,34 +78,33 @@ app.delete("/todos/:id", function(req, res) {
 });
 
 app.put("/todos/:id", function(req, res) {
-	var body = _.pick(req.body, "task", "complete");
-	var task = _.findWhere(todos, {
-		id: parseInt(req.params.id)
+	var todoId = parseInt(req.params.id, 10);
+	var body   = _.pick(req.body, "description", "completed");
+	var atts   = {};
+
+	if (body.hasOwnProperty("completed")) {
+		atts.completed = body.completed;
+	}
+	if (body.hasOwnProperty("description")) {
+		atts.description = body.description;
+	}
+
+	db.todo.findById(todoId).then(function (todo) {
+		if (todo) {
+			todo.update(atts).then(function (todo) {
+				res.json(todo.toJSON());
+			}, function	(e) {
+				res.status(400).json(e);
+			});
+		} else {
+			res.status(404).send();
+		}
+	}, function (e) {
+		res.status(500).json(e);
 	});
-	var valid = {};
-
-	if (typeof task === 'undefined') {
-		return res.status(404).send();
-	}
-
-	if (body.hasOwnProperty("complete") && _.isBoolean(body.complete)) {
-		valid.complete = body.complete;
-	} else if (body.hasOwnProperty("complete")) {
-		return res.status(400).send();
-	}
-
-	if (body.hasOwnProperty("task") && _.isString(body.task) && body.task.length > 0) {
-		valid.task = body.task.trim();
-	} else if (body.hasOwnProperty("task")) {
-		return res.status(400).send();
-	}
-
-	_.extendOwn(task, valid);
-
-	res.json(task);
 });
 
-db.seq.sync().then(function() {
+db.seq.sync({force: true}).then(function() {
 	app.listen(PORT, function() {
 		console.log("Express server is running on port " + PORT + "...");
 	});

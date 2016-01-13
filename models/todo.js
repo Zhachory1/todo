@@ -1,16 +1,28 @@
-module.exports = function (seq, dt) {
-	return seq.define('todo', {
+module.exports = function(sequelize, DataTypes) {
+	return sequelize.define('todo', {
 		description: {
-			type: dt.STRING,
+			type: DataTypes.STRING,
 			allowNull: false,
 			validate: {
-				len: [1, 256]
+				len: [1, 256],
+				isString: function (value) {
+					if (typeof value !== 'string') {
+						throw new Error('Description must be a string');
+					}
+				}
 			}
 		},
 		completed: {
-			type: dt.BOOLEAN,
+			type: DataTypes.BOOLEAN,
 			allowNull: false,
-			defaultValue: false
+			defaultValue: false,
+			validate: {
+				isBoolean: function (value) {
+					if (typeof value !== 'boolean') {
+						throw new Error('Completed must be a boolean');
+					}
+				}
+			}
 		}
 	});
 };
