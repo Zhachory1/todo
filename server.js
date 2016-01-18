@@ -109,13 +109,13 @@ app.post("/users", function (req, res) {
 	body.email = body.email.trim();
 
 	db.user.create(body).then(function (user) {
-		res.json(user);
+		res.json(user.toPublicJSON());
 	}, function(e) {
 		res.status(400).json(e);
 	});
 });
 
-db.seq.sync().then(function() {
+db.seq.sync({force: true}).then(function() {
 	app.listen(PORT, function() {
 		console.log("Express server is running on port " + PORT + "...");
 	});
