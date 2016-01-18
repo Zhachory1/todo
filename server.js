@@ -2,6 +2,7 @@ var express    = require('express');
 var bp         = require("body-parser");
 var _          = require("underscore");
 var db         = require("./db.js")
+var bc         = require('bcryptjs');
 var app        = express();
 var todos      = [];
 var todoNextId = 1;
@@ -10,7 +11,7 @@ const PORT     = process.env.PORT || 3000;
 app.use(bp.json());
 
 app.get("/", function (req, res) {
-	res.send("Todo API Root");
+	return res.send("Todo API Root");
 });
 
 // GET /todos
@@ -29,9 +30,9 @@ app.get("/todos", function (req, res) {
 	db.todo.findAll({
 		where: where
 	}).then(function(todos) {
-		res.json(todos)
+		return res.json(todos)
 	}, function(e) {
-		res.status(500).json(e);
+		return res.status(500).json(e);
 	});
 });
 
@@ -41,10 +42,10 @@ app.get("/todos/:id", function (req, res) {
 		if (!!todo) {
 			res.json(todo);
 		} else {
-			res.status(404).send();
+			return res.status(404).send();
 		}
 	}, function(e) {
-		res.status(500).json(e);
+		return res.status(500).json(e);
 	});
 });
 
@@ -53,9 +54,9 @@ app.post("/todos", function (req, res) {
 	body.description = body.description.trim();
 
 	db.todo.create(body).then(function(todo) {
-		res.json(todo);
+		return res.json(todo);
 	}, function(e) {
-		res.status(400).json(e);
+		return res.status(400).json(e);
 	});
 });
 
@@ -66,14 +67,14 @@ app.delete("/todos/:id", function(req, res) {
 		}
 	}).then(function (affRows) {
 		if (affRows) {
-			res.status(204).send();
+			return res.status(204).send();
 		} else {
-			res.status(404).json({
+			return res.status(404).json({
 				error: "No todo with that id."
 			});
 		}
 	}, function (e) {
-		res.status(500).send();
+		return res.status(500).send();
 	})
 });
 
@@ -92,15 +93,15 @@ app.put("/todos/:id", function (req, res) {
 	db.todo.findById(todoId).then(function (todo) {
 		if (todo) {
 			todo.update(atts).then(function (todo) {
-				res.json(todo.toJSON());
+				return res.json(todo.toJSON());
 			}, function	(e) {
-				res.status(400).json(e);
+				return res.status(400).json(e);
 			});
 		} else {
-			res.status(404).send();
+			return res.status(404).send();
 		}
 	}, function (e) {
-		res.status(500).json(e);
+		return res.status(500).json(e);
 	});
 });
 
@@ -109,9 +110,19 @@ app.post("/users", function (req, res) {
 	body.email = body.email.trim();
 
 	db.user.create(body).then(function (user) {
-		res.json(user.toPublicJSON());
+		return res.json(user.toPublicJSON());
 	}, function(e) {
-		res.status(400).json(e);
+		return res.status(400).json(e);
+	});
+});
+
+app.post("/users/login", function (req, res) {
+	var body = _.pick(req.body, "email", "password");
+
+	db.user.auth(body).then(function (user) {
+		return res.json(user.toPublicJSON());
+	}, function () {
+		return res.status(401).send();
 	});
 });
 
