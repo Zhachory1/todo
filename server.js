@@ -9,12 +9,12 @@ const PORT     = process.env.PORT || 3000;
 
 app.use(bp.json());
 
-app.get("/", function(req, res) {
+app.get("/", function (req, res) {
 	res.send("Todo API Root");
 });
 
 // GET /todos
-app.get("/todos", function(req, res) {
+app.get("/todos", function (req, res) {
 	var query = req.query;
 	var where = {};
 	if (query.hasOwnProperty("completed")) {
@@ -36,7 +36,7 @@ app.get("/todos", function(req, res) {
 });
 
 // GET /todos/:id
-app.get("/todos/:id", function(req, res) {
+app.get("/todos/:id", function (req, res) {
 	db.todo.findById(parseInt(req.params.id, 10)).then(function(todo) {
 		if (!!todo) {
 			res.json(todo);
@@ -48,7 +48,7 @@ app.get("/todos/:id", function(req, res) {
 	});
 });
 
-app.post("/todos", function(req, res) {
+app.post("/todos", function (req, res) {
 	var body = _.pick(req.body, "description", "completed");
 	body.description = body.description.trim();
 
@@ -77,7 +77,7 @@ app.delete("/todos/:id", function(req, res) {
 	})
 });
 
-app.put("/todos/:id", function(req, res) {
+app.put("/todos/:id", function (req, res) {
 	var todoId = parseInt(req.params.id, 10);
 	var body   = _.pick(req.body, "description", "completed");
 	var atts   = {};
@@ -104,7 +104,18 @@ app.put("/todos/:id", function(req, res) {
 	});
 });
 
-db.seq.sync({force: true}).then(function() {
+app.post("/users", function (req, res) {
+	var body = _.pick(req.body, "email", "password");
+	body.email = body.email.trim();
+
+	db.user.create(body).then(function (user) {
+		res.json(user);
+	}, function(e) {
+		res.status(400).json(e);
+	});
+});
+
+db.seq.sync().then(function() {
 	app.listen(PORT, function() {
 		console.log("Express server is running on port " + PORT + "...");
 	});

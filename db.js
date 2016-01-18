@@ -15,6 +15,7 @@ if(env === 'production') {
 }
 
 db.todo        = seq.import(__dirname + "/models/todo.js");
+db.user        = seq.import(__dirname + "/models/users.js");
 db.seq         = seq;
 db.Seq         = Seq;
 module.exports = db;
