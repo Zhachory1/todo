@@ -4,7 +4,7 @@ var seq = new sequel(undefined, undefined, undefined, {
 	'storage': __dirname + '/bsd.sqlite'
 });
 
-var Todo = seq.define('todo', {
+var todo = seq.define('todo', {
 	description: {
 		type: sequel.STRING,
 		allowNull: false,
@@ -19,41 +19,37 @@ var Todo = seq.define('todo', {
 	}
 });
 
+var user = seq.define('user', {
+	email: sequel.STRING
+});
+
+todo.belongsTo(user);
+user.hasMany(todo);
+
 seq.sync().then(function() {
 	console.log("Everything is synced.");
 
-	Todo.findById(3).then(function (todo) {
-		if (todo) {
-			console.log(todo.toJSON());
-		} else {
-			console.log("Could not find todo!");
-		}
-	})
+	user.findById(1).then(function (user) {
+		user.getTodos({
+			where: {
+				completed: false
+			}
+		}).then(function (todos) {
+			todos.forEach(function (todo) {
+				console.log(todo.toJSON());
+			})
+		})
+	});
 
-	// Todo.create({
-	// 	description: "Take out the trash",
-	// 	// completed:   false
-	// }).then(function (todo) {
-	// 	return Todo.create({
-	// 		description: "Clean office"
-	// 	});
+	// user.create({
+	// 	email: "zhachory@example.com"
 	// }).then(function () {
-	// 	return Todo.findAll({
-	// 		where: {
-	// 			description: {
-	// 				$like: '%Office%'
-	// 			}
-	// 		}
-	// 	})
-	// }).then(function (todos) {
-	// 	if (todos) {
-	// 		todos.forEach(function(todo) {
-	// 			console.log(todo.toJSON())
-	// 		});
-	// 	} else {
-	// 		console.log("No todo found!");
-	// 	}
-	// }).catch(function(e) {
-	// 	console.log(e);
+	// 	return todo.create({
+	// 		description: 'Clean yard'
+	// 	});
+	// }).then(function (todo) {
+	// 	user.findById(1).then(function (user) {
+	// 		user.addTodo(todo);
+	// 	});
 	// });
-})
+});
