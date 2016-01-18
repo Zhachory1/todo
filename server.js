@@ -120,7 +120,13 @@ app.post("/users/login", function (req, res) {
 	var body = _.pick(req.body, "email", "password");
 
 	db.user.auth(body).then(function (user) {
-		return res.json(user.toPublicJSON());
+		var token = user.generateToken("auth");
+		if(token) {
+			return res.header("Auth", token).json(user.toPublicJSON());
+		} else {
+			return res.status(401).send();
+		}
+		
 	}, function () {
 		return res.status(401).send();
 	});
